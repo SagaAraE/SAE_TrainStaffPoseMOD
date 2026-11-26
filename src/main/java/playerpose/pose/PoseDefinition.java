@@ -7,6 +7,7 @@ package playerpose.pose;
  *  ・X回転：マイナスで腕・脚が前に出る
  *  ・Z回転：右腕・右脚はプラスで外側へ、左腕・左脚はマイナスで外側へ
  *  ・bodyLean：上半身を腰を中心に傾ける角度。プラスでキャラの左へ傾く
+ *  ・sideShift：体全体の見た目を横へずらす量（ブロック）。プラスでキャラの左へ
  *
  * 頭の X/Y は視線に追従した値に「足す」。それ以外の部位は値で「上書き」する。
  */
@@ -26,6 +27,7 @@ public final class PoseDefinition {
     /** [部位][X,Y,Z] 度 */
     public final float[][] parts = new float[PART_COUNT][3];
     public float bodyLean;
+    public float sideShift;
 
     public PoseDefinition set(int part, float x, float y, float z) {
         parts[part][0] = x;
@@ -39,16 +41,22 @@ public final class PoseDefinition {
         return this;
     }
 
+    public PoseDefinition shift(float blocks) {
+        sideShift = blocks;
+        return this;
+    }
+
     public PoseDefinition copy() {
         PoseDefinition d = new PoseDefinition();
         for (int i = 0; i < PART_COUNT; i++) {
             System.arraycopy(parts[i], 0, d.parts[i], 0, 3);
         }
         d.bodyLean = bodyLean;
+        d.sideShift = sideShift;
         return d;
     }
 
-    /** 左右反転版：左右の部位を入れ替え、Y回転・Z回転・傾きの向きを逆にする。 */
+    /** 左右反転版：左右の部位を入れ替え、Y回転・Z回転・傾き・横ずらしの向きを逆にする。 */
     public PoseDefinition mirror() {
         PoseDefinition d = new PoseDefinition();
         for (int i = 0; i < PART_COUNT; i++) {
@@ -58,6 +66,7 @@ public final class PoseDefinition {
             d.parts[i][2] = -src[2];
         }
         d.bodyLean = -bodyLean;
+        d.sideShift = -sideShift;
         return d;
     }
 

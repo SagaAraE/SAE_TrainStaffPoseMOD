@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 import noppes.mpm.client.model.ModelMPM;
 import noppes.mpm.constants.EnumAnimation;
+import org.lwjgl.opengl.GL11;
 import playerpose.pose.PoseDefinition;
 import playerpose.pose.PoseMath;
 import playerpose.pose.PoseRegistry;
@@ -15,6 +16,10 @@ import playerpose.pose.PoseRegistry;
  *
  * 注意：このモデルは全プレイヤーで1つを使い回している。
  * ポーズで動かした取り付け位置は、毎回 角度計算の前に元へ戻す（resetSharedParts）。
+ *
+ * 手を上げるポーズ（5・6）では、手持ちアイテムを左手側に描く。
+ * MPMはアイテムを描く直前に「右腕.postRender」で手の位置へ移動するので、
+ * アイテム描画の間だけ右腕の欄を「左手の位置へ移動する代役」に差し替える（beginItemSwap / endItemSwap）。
  */
 public class ModelPoseMPM extends ModelMPM {
 
@@ -31,8 +36,18 @@ public class ModelPoseMPM extends ModelMPM {
     private final float[] defRightArm;
     private final float[] defLeftArm;
 
+    /** 本物の右腕（差し替え中も元に戻せるように保持）。 */
+    private final ModelRenderer realRightArm;
+    /** アイテム描画の間だけ右腕の欄に入れる代役。 */
+    private final LeftHandItemAnchor leftHandAnchor;
+    /** 直前に角度計算したプレイヤーが、アイテムを左手に持たせるポーズか。 */
+    private boolean itemInLeftHand;
+    private int itemInLeftHandEntityId = -1;
+
     public ModelPoseMPM(float scale) {
         super(scale);
+        realRightArm = bipedRightArm;
+        leftHandAnchor = new LeftHandItemAnchor(this, bipedLeftArm);
         ModelRenderer hw = null;
         try {
             hw = (ModelRenderer) ReflectionHelper.findField(ModelMPM.class, "headwear").get(this);
@@ -51,6 +66,8 @@ public class ModelPoseMPM extends ModelMPM {
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks,
                                   float netHeadYaw, float headPitch, float scale, Entity entity) {
+        endItemSwap(); // 念のため：右腕の欄が代役のままなら本物へ戻す
+        itemInLeftHand = false;
         resetSharedParts();
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entity);
 
@@ -65,7 +82,24 @@ public class ModelPoseMPM extends ModelMPM {
         PoseDefinition def = PoseRegistry.get(pose);
         if (def != null) {
             applyPose(def);
+            itemInLeftHand = PoseRegistry.isItemInLeftHand(pose);
+            itemInLeftHandEntityId = entity.getEntityId();
         }
+    }
+
+    /**
+     * 手持ちアイテムの描画直前に呼ぶ。このプレイヤーが手を上げるポーズなら、
+     * 右腕の欄を「左手の位置へ移動する代役」に差し替える。
+     */
+    public void beginItemSwap(Entity entity) {
+        if (itemInLeftHand && entity != null && entity.getEntityId() == itemInLeftHandEntityId) {
+            bipedRightArm = leftHandAnchor;
+        }
+    }
+
+    /** 手持ちアイテムの描画後に呼ぶ。右腕の欄を本物へ戻す。 */
+    public void endItemSwap() {
+        bipedRightArm = realRightArm;
     }
 
     private void applyPose(PoseDefinition def) {
@@ -140,5 +174,29 @@ public class ModelPoseMPM extends ModelMPM {
         part.rotationPointX = def[0];
         part.rotationPointY = def[1];
         part.rotationPointZ = def[2];
+    }
+
+    /**
+     * 右腕の代わりに置く「位置合わせ専用」の部品（描画はしない）。
+     * MPMは postRender のあと、右手用に X を -1px ずらしてからアイテムを描くので、
+     * 左腕の位置へ移動したうえで、右手と左手の中心の差（2px）だけ戻しておく。
+     */
+    private static final class LeftHandItemAnchor extends ModelRenderer {
+
+        private final ModelRenderer leftArm;
+
+        LeftHandItemAnchor(ModelPoseMPM model, ModelRenderer leftArm) {
+            super(model);
+            // コンストラクタで部品一覧に登録されるが、箱を持たない部品が
+            // 「刺さった矢」の描画で選ばれると落ちるので外しておく
+            model.boxList.remove(this);
+            this.leftArm = leftArm;
+        }
+
+        @Override
+        public void postRender(float scale) {
+            leftArm.postRender(scale);
+            GL11.glTranslatef(0.125F, 0.0F, 0.0F);
+        }
     }
 }

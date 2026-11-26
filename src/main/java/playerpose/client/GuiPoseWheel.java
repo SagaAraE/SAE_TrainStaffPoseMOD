@@ -18,6 +18,8 @@ import playerpose.pose.PoseMath;
  *  ・6分割の扇形にマウスを乗せてクリック、または数字キー1〜6で決定
  *  ・中央クリック / 0キーで解除、Esc / 円の外クリックで閉じる
  *  ・中央に自分のキャラクターのプレビュー（マウスを乗せたポーズを取る）
+ *    実際の三人称（後ろから見た視点）と左右が一致するよう、背中側から描く
+ *  ・選択画面を開くキー（初期値 P）をもう一度押しても閉じる
  */
 public class GuiPoseWheel extends GuiScreen {
 
@@ -110,9 +112,17 @@ public class GuiPoseWheel extends GuiScreen {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         PoseRenderState.previewing = true;
         PoseRenderState.previewPose = pose;
+        GL11.glPushMatrix();
         try {
+            // インベントリ画面と同じ描き方だと正面向き（鏡に映したように左右が逆に見える）になるので、
+            // キャラの足元を軸に縦方向へ180度回し、背中側から見せる。
+            // 奥行き(Z=50)も軸に含めないと、回したキャラが選択画面の円より奥へ行って隠れてしまう。
+            GL11.glTranslatef(cx, feetY, 50.0F);
+            GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
+            GL11.glTranslatef(-cx, -feetY, -50.0F);
             GuiInventory.func_147046_a(cx, feetY, size, 0.0F, 0.0F, mc.thePlayer);
         } finally {
+            GL11.glPopMatrix();
             PoseRenderState.previewing = false;
             PoseRenderState.previewPose = Poses.NONE;
         }
@@ -170,6 +180,8 @@ public class GuiPoseWheel extends GuiScreen {
             select(keyCode - Keyboard.KEY_1 + 1);
         } else if (keyCode == Keyboard.KEY_0) {
             select(Poses.NONE);
+        } else if (keyCode == ClientEventHandler.KEY_OPEN_WHEEL.getKeyCode() && keyCode != Keyboard.KEY_NONE) {
+            mc.displayGuiScreen(null); // 開くキーをもう一度押したら閉じる
         } else {
             super.keyTyped(typedChar, keyCode); // Esc で閉じる
         }

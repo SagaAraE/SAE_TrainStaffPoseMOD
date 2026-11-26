@@ -9,3 +9,5 @@ playerpose.gui.hint=Center click / 0: release   Esc: close
 playerpose.msg.cannotPose=You can't pose while sneaking, sleeping, or playing an MPM animation
 playerpose.msg.reloaded=Pose settings reloaded
 playerpose.cmd.usage=/pose [1-6|off|reload]
+key.playerpose.openWheel=Open Pose Menu
+key.categories.playerpose=SAE TrainStaffPose

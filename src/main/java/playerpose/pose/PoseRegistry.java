@@ -26,9 +26,9 @@ public final class PoseRegistry {
                 .set(PoseDefinition.LEFT_LEG, 0F, 0F, -12F);
     }
 
-    /** 3 左側面監視：上半身を左へ傾ける。 */
+    /** 3 左側面監視：上半身を左へ傾け、体全体も左へずらす。 */
     public static PoseDefinition defaultPose3() {
-        return new PoseDefinition().lean(20F);
+        return new PoseDefinition().lean(20F).shift(0.25F);
     }
 
     /** 5 右手上げ：右手を大きく上げる。 */
@@ -44,6 +44,11 @@ public final class PoseRegistry {
         DEFS[4] = pose3.mirror();
         DEFS[5] = pose5;
         DEFS[6] = pose5.mirror();
+    }
+
+    /** 手を上げるポーズ（5・6）では、手持ちアイテムを左手側に描く。 */
+    public static boolean isItemInLeftHand(int pose) {
+        return pose == 5 || pose == 6;
     }
 
     /** 1〜6 以外は null。 */

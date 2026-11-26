@@ -9,3 +9,5 @@ playerpose.gui.hint=中央クリック / 0キー：解除　Esc：閉じる
 playerpose.msg.cannotPose=スニーク中・就寝中・MPMのモーション中はポーズを取れません
 playerpose.msg.reloaded=ポーズ設定を再読み込みしました
 playerpose.cmd.usage=/pose [1-6|off|reload]
+key.playerpose.openWheel=ポーズ選択画面を開く
+key.categories.playerpose=SAE TrainStaffPose

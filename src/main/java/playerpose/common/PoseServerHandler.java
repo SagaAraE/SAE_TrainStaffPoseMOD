@@ -19,13 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * サーバー側のポーズ管理。
  * ・ポーズ要求の受付（通信スレッドから来るので、いったん pending に積んで tick で処理する）
- * ・解除判定（移動 / スニーク開始 / 乗車・降車・乗り換え / MPMモーション開始 / 就寝）
+ * ・解除判定（スニーク開始。ほかに MPMモーション開始 / 就寝 / 死亡などの例外的な場合）
+ *   移動・乗車・降車では解除しない
  * ・周囲への同期（変化時に即送信 + ポーズ中は2秒ごとに送り直し）
  */
 public class PoseServerHandler {
 
-    /** これを超えて1tickで動いたら「移動」とみなす（ブロック）。 */
-    private static final double MOVE_THRESHOLD = 0.03D;
     /** ポーズ中の送り直し間隔（tick）。 */
     private static final int HEARTBEAT_TICKS = 40;
     /** 同期を送る範囲（ブロック）。 */
@@ -38,11 +37,7 @@ public class PoseServerHandler {
     private static final class State {
         int pose;
         boolean sneaking;
-        int ridingId;
         boolean mpmAnimating;
-        double x;
-        double y;
-        double z;
         int ticks;
     }
 
@@ -71,22 +66,13 @@ public class PoseServerHandler {
         }
 
         boolean sneaking = player.isSneaking();
-        int ridingId = ridingId(player);
         boolean mpm = MpmBridge.isAnimating(player);
 
-        boolean cancel = (sneaking && !st.sneaking)   // スニークを始めた瞬間
-                || ridingId != st.ridingId            // 乗った / 降りた / 乗り換えた瞬間
-                || (mpm && !st.mpmAnimating)          // MPMのモーションを始めた瞬間
+        // 解除はスニークを始めた瞬間だけ（移動・乗車・降車では解除しない）。
+        // MPMのモーション開始と就寝は、見た目が両立しないので例外として解除する。
+        boolean cancel = (sneaking && !st.sneaking)
+                || (mpm && !st.mpmAnimating)
                 || player.isPlayerSleeping();
-
-        if (!cancel && ridingId == -1) {              // 乗車中は車両の移動なので判定しない
-            double dx = player.posX - st.x;
-            double dy = player.posY - st.y;
-            double dz = player.posZ - st.z;
-            if (dx * dx + dy * dy + dz * dz > MOVE_THRESHOLD * MOVE_THRESHOLD) {
-                cancel = true;
-            }
-        }
 
         if (cancel) {
             release(player);
@@ -128,15 +114,7 @@ public class PoseServerHandler {
 
     private static void snapshot(State st, EntityPlayer player) {
         st.sneaking = player.isSneaking();
-        st.ridingId = ridingId(player);
         st.mpmAnimating = MpmBridge.isAnimating(player);
-        st.x = player.posX;
-        st.y = player.posY;
-        st.z = player.posZ;
-    }
-
-    private static int ridingId(EntityPlayer player) {
-        return player.ridingEntity != null ? player.ridingEntity.getEntityId() : -1;
     }
 
     private static void broadcast(EntityPlayer player, int pose) {

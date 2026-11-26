@@ -20,11 +20,12 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
+        ClientEventHandler.registerKeys();
         ClientEventHandler clientEvents = new ClientEventHandler();
-        FMLCommonHandler.instance().bus().register(clientEvents); // ClientTickEvent
+        FMLCommonHandler.instance().bus().register(clientEvents); // ClientTickEvent / KeyInputEvent
         MinecraftForge.EVENT_BUS.register(clientEvents);          // WorldEvent.Unload
         PoseRenderHandler renderHandler = new PoseRenderHandler();
-        MinecraftForge.EVENT_BUS.register(renderHandler);          // RenderPlayerEvent
+        MinecraftForge.EVENT_BUS.register(renderHandler);          // RenderPlayerEvent / Specials
         FMLCommonHandler.instance().bus().register(renderHandler); // RenderTickEvent
         ClientCommandHandler.instance.registerCommand(new CommandPose());
     }

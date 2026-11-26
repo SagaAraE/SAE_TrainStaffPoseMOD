@@ -16,8 +16,6 @@ import java.io.File;
  */
 public final class PoseConfig {
 
-    public static double ridingYOffset = 0.5D;
-
     private static Configuration config;
 
     private PoseConfig() {
@@ -37,15 +35,19 @@ public final class PoseConfig {
     }
 
     private static void load() {
-        ridingYOffset = config.get("general", "ridingYOffset", 0.5D,
-                "乗車中にポーズを取ったとき、見た目を上へずらす量（ブロック）").getDouble(0.5D);
+        // 乗車中のY座標調整は廃止したので、古い設定ファイルに残っている項目を消す
+        boolean removedOld = false;
+        if (config.hasKey("general", "ridingYOffset")) {
+            config.getCategory("general").remove("ridingYOffset");
+            removedOld = true;
+        }
 
         PoseDefinition p1 = readPose("pose1", "1 左扉抑え（2 右扉抑え はこの左右反転）", PoseRegistry.defaultPose1());
         PoseDefinition p3 = readPose("pose3", "3 左側面監視（4 右側面監視 はこの左右反転）", PoseRegistry.defaultPose3());
         PoseDefinition p5 = readPose("pose5", "5 右手上げ（6 左手上げ はこの左右反転）", PoseRegistry.defaultPose5());
         PoseRegistry.setBase(p1, p3, p5);
 
-        if (config.hasChanged()) {
+        if (removedOld || config.hasChanged()) {
             config.save();
         }
     }
@@ -53,7 +55,8 @@ public final class PoseConfig {
     private static PoseDefinition readPose(String category, String comment, PoseDefinition defaults) {
         config.addCustomCategoryComment(category, comment
                 + "\n各部位は \"X,Y,Z\"（度）。X:マイナスで前へ / Z:右腕右脚はプラス、左腕左脚はマイナスで外側へ"
-                + "\nbodyLean:上半身を腰から傾ける角度（プラスで左へ）");
+                + "\nbodyLean:上半身を腰から傾ける角度（プラスで左へ）"
+                + "\nsideShift:体全体の見た目を横へずらす量（ブロック、プラスで左へ）");
         PoseDefinition def = new PoseDefinition();
         for (int i = 0; i < PoseDefinition.PART_COUNT; i++) {
             String value = config.get(category, PoseDefinition.PART_KEYS[i],
@@ -62,6 +65,7 @@ public final class PoseConfig {
             def.set(i, v[0], v[1], v[2]);
         }
         def.lean((float) config.get(category, "bodyLean", (double) defaults.bodyLean).getDouble(defaults.bodyLean));
+        def.shift((float) config.get(category, "sideShift", (double) defaults.sideShift).getDouble(defaults.sideShift));
         return def;
     }
 }

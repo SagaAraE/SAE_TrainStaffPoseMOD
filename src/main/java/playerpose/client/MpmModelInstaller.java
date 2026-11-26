@@ -16,6 +16,9 @@ public final class MpmModelInstaller {
 
     private static final Logger LOG = LogManager.getLogger("PlayerPose");
 
+    /** 差し替えた本体モデル（手持ちアイテムの左右入れ替えに使う）。差し替え失敗時は null。 */
+    public static ModelPoseMPM mainModel;
+
     private MpmModelInstaller() {
     }
 
@@ -23,12 +26,14 @@ public final class MpmModelInstaller {
         try {
             RenderMPM renderer = RenderEvent.renderer;
             // 引数の値は MPM 1.7.10b の RenderMPM コンストラクタと同じ
-            ReflectionHelper.setPrivateValue(RenderMPM.class, renderer, new ModelPoseMPM(0.0F),
+            ModelPoseMPM main = new ModelPoseMPM(0.0F);
+            ReflectionHelper.setPrivateValue(RenderMPM.class, renderer, main,
                     "field_77109_a", "modelBipedMain");
             ReflectionHelper.setPrivateValue(RenderMPM.class, renderer, new ModelPoseMPM(1.0F),
                     "field_77108_b", "modelArmorChestplate");
             ReflectionHelper.setPrivateValue(RenderMPM.class, renderer, new ModelPoseMPM(0.5F),
                     "field_77111_i", "modelArmor");
+            mainModel = main;
             LOG.info("MPMのプレイヤーモデルをポーズ対応モデルに差し替えました");
         } catch (Throwable t) {
             LOG.error("MPMのモデル差し替えに失敗しました。MPMのバージョンが 1.7.10b か確認してください", t);
