@@ -25,6 +25,17 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon build
 
+      - name: Check reobfuscated jar
+        run: |
+          JAR=$(ls build/libs/*.jar | grep -v -e '-dev' -e '-sources' | head -1)
+          echo "jar: $JAR"
+          unzip -l "$JAR"
+          mkdir -p /tmp/chk && cd /tmp/chk && unzip -q -o "$GITHUB_WORKSPACE/$JAR"
+          echo "== ModelPoseMPM =="
+          javap -p -c -cp . playerpose.client.ModelPoseMPM | grep -oE "(public|private|protected) [^(]*\(|(Field|Method) [^ ]+" | sort -u
+          echo "== PoseRenderHandler / GuiPoseWheel / CommandPose methods =="
+          for c in playerpose.client.PoseRenderHandler playerpose.client.GuiPoseWheel playerpose.client.CommandPose playerpose.common.PoseServerHandler; do javap -p -cp . $c; done
+
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
