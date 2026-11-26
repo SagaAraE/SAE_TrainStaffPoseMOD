@@ -1,0 +1,5 @@
+// libs/ の MPM 1.7.10b を開発用の名前（MCP名）に変換して読み込む。
+// コンパイルと開発環境での起動にだけ使い、完成した jar には含めない。
+dependencies {
+    devOnlyNonPublishable(rfg.deobf(project.files("libs/MorePlayerModels_1.7.10b.jar")))
+}

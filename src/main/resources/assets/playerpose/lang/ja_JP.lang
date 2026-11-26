@@ -1,0 +1,11 @@
+playerpose.pose.1=左扉抑え
+playerpose.pose.2=右扉抑え
+playerpose.pose.3=左側面監視
+playerpose.pose.4=右側面監視
+playerpose.pose.5=右手上げ
+playerpose.pose.6=左手上げ
+playerpose.gui.title=ポーズ選択
+playerpose.gui.hint=中央クリック / 0キー：解除　Esc：閉じる
+playerpose.msg.cannotPose=スニーク中・就寝中・MPMのモーション中はポーズを取れません
+playerpose.msg.reloaded=ポーズ設定を再読み込みしました
+playerpose.cmd.usage=/pose [1-6|off|reload]

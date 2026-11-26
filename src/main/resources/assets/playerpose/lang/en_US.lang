@@ -1,0 +1,11 @@
+playerpose.pose.1=Hold Left Door
+playerpose.pose.2=Hold Right Door
+playerpose.pose.3=Watch Left Side
+playerpose.pose.4=Watch Right Side
+playerpose.pose.5=Raise Right Hand
+playerpose.pose.6=Raise Left Hand
+playerpose.gui.title=Select Pose
+playerpose.gui.hint=Center click / 0: release   Esc: close
+playerpose.msg.cannotPose=You can't pose while sneaking, sleeping, or playing an MPM animation
+playerpose.msg.reloaded=Pose settings reloaded
+playerpose.cmd.usage=/pose [1-6|off|reload]
