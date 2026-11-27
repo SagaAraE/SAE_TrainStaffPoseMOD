@@ -2,10 +2,10 @@ package playerpose.pose;
 
 /**
  * ポーズ1〜9の定義。番号は円形メニューを下（解除=0）から時計回りに一周する順番。
- *  1 左手上げ / 2 左扉抑え / 3 左側面監視（手上げ） / 4 左側面監視 / 5 起立 /
- *  6 右側面監視 / 7 右側面監視（手上げ） / 8 右扉抑え / 9 右手上げ
+ *  1 左手上げ / 2 扉抑え（左手上げ） / 3 左側面監視（手上げ） / 4 左側面監視 / 5 起立 /
+ *  6 右側面監視 / 7 右側面監視（手上げ） / 8 扉抑え（右手上げ） / 9 右手上げ
  *
- * 基本形は 扉抑え（左）・側面監視（左）・側面監視（手上げ）（左）・手上げ（右）・起立 の5つ。
+ * 基本形は 扉抑え（右手上げ）・側面監視（左）・側面監視（手上げ）（左）・手上げ（右）・起立 の5つ。
  * 反対向きはその左右反転を自動で作る。
  *
  * 角度の初期値は目で読み取ったもの。実機では設定ファイル（config/playerpose.cfg）を
@@ -35,7 +35,7 @@ public final class PoseRegistry {
     private PoseRegistry() {
     }
 
-    /** 扉抑え（左）：右手を高く上げ（165°）、左手足を斜めに。 */
+    /** 扉抑え（右手上げ）：右手を高く上げ（165°）、左手足を斜めに。2 扉抑え（左手上げ） はこの左右反転。 */
     public static PoseDefinition defaultDoorHold() {
         return new PoseDefinition()
                 .set(PoseDefinition.RIGHT_ARM, 0F, 0F, 165F)
@@ -87,8 +87,8 @@ public final class PoseRegistry {
         PoseDefinition raise = defaultRaiseHand().withAnglesOf(raiseHand);
         PoseDefinition st = defaultStand().withAnglesOf(stand);
         PoseDefinition watchRaise = defaultSideWatchRaise().withAnglesOf(sideWatchRaise);
-        DEFS[DOOR_LEFT] = door;
-        DEFS[DOOR_RIGHT] = door.mirror();
+        DEFS[DOOR_RIGHT] = door;
+        DEFS[DOOR_LEFT] = door.mirror();
         DEFS[SIDE_WATCH_LEFT] = watch;
         DEFS[SIDE_WATCH_RIGHT] = watch.mirror();
         DEFS[RAISE_RIGHT] = raise;

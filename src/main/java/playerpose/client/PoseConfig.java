@@ -152,7 +152,7 @@ public final class PoseConfig {
         cameraExtraHeight = Poses.clamp((float) config.get("adjust", "cameraExtraHeight", 0D).getDouble(0D),
                 CAMERA_HEIGHT_MIN, CAMERA_HEIGHT_MAX);
 
-        PoseDefinition door = readPose("doorHold", "2 左扉抑え（8 右扉抑え はこの左右反転）",
+        PoseDefinition door = readPose("doorHold", "8 扉抑え（右手上げ）（2 扉抑え（左手上げ） はこの左右反転）",
                 PoseRegistry.defaultDoorHold());
         PoseDefinition watch = readPose("sideWatch", "4 左側面監視（6 右側面監視 はこの左右反転）",
                 PoseRegistry.defaultSideWatch());

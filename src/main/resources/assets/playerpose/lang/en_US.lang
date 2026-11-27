@@ -1,11 +1,11 @@
 playerpose.pose.1=Raise Left Hand
-playerpose.pose.2=Hold Left Door
+playerpose.pose.2=Hold Door (Left Hand Up)
 playerpose.pose.3=Watch Left Side (Raise)
 playerpose.pose.4=Watch Left Side
 playerpose.pose.5=Stand Up
 playerpose.pose.6=Watch Right Side
 playerpose.pose.7=Watch Right Side (Raise)
-playerpose.pose.8=Hold Right Door
+playerpose.pose.8=Hold Door (Right Hand Up)
 playerpose.pose.9=Raise Right Hand
 playerpose.adjust.camera=Camera follows head
 playerpose.gui.title=Select Pose

@@ -1,11 +1,11 @@
 playerpose.pose.1=左手上げ
-playerpose.pose.2=左扉抑え
+playerpose.pose.2=扉抑え（左手上げ）
 playerpose.pose.3=左側面監視（手上げ）
 playerpose.pose.4=左側面監視
 playerpose.pose.5=起立
 playerpose.pose.6=右側面監視
 playerpose.pose.7=右側面監視（手上げ）
-playerpose.pose.8=右扉抑え
+playerpose.pose.8=扉抑え（右手上げ）
 playerpose.pose.9=右手上げ
 playerpose.adjust.camera=視点を頭に合わせる
 playerpose.gui.title=ポーズ選択
