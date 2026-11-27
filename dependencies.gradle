@@ -1,0 +1,6 @@
+// libs/ の MPM 1.7.10b を開発用の名前（MCP名）に変換して読み込む。
+// コンパイルと開発環境での起動にだけ使い、完成した jar には含めない。
+dependencies {
+    // More Player Models 1.7.10b by Noppes (CurseForge project 221939, file 2242988), fetched via Curse Maven
+    devOnlyNonPublishable(rfg.deobf("curse.maven:more-player-models-221939:2242988"))
+}

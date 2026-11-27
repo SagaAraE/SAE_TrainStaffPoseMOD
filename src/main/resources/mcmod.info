@@ -1,0 +1,21 @@
+{
+	"modListVersion": 2,
+	"modList": [{
+		"modid": "${modId}",
+		"name": "${modName}",
+		"description": "列車乗務員向けの静止ポーズmod（More Player Models 1.7.10b 必須）",
+		"version": "${modVersion}",
+		"mcversion": "${minecraftVersion}",
+		"url": "https://github.com/SagaAraE/SAE_TrainStaffPoseMOD",
+		"updateUrl": "",
+		"authorList": ["SagaAraE"],
+		"credits": "More Player Models by Noppes. License: CC BY-NC 3.0",
+		"logoFile": "",
+		"screenshots": [],
+		"parent": "",
+		"requiredMods": ["moreplayermodels"],
+		"dependencies": ["moreplayermodels"],
+		"dependants": [],
+		"useDependencyInformation": true
+	}]
+}
