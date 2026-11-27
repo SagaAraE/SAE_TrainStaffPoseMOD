@@ -13,9 +13,10 @@ import playerpose.pose.PoseMath;
 import playerpose.pose.PoseRegistry;
 
 /**
- * 側面監視の仲間（3・4・8・9）の間、自分の視点（カメラ）を横（傾く方向）へずらす（一人称・三人称とも）。
+ * 側面監視の仲間（3・4・6・7）の間、自分の視点（カメラ）を横（傾く方向）へずらす（一人称・三人称とも）。
  * ・横：傾いた頭の目の位置（乗車中は横移動の調整分も含む）＋ 調整画面の「視点の横移動（追加）」
  * ・上下：調整画面の「視点の高さ（追加）」だけ（頭の傾きや乗車中の高さでは動かさない）
+ * ・起立（5）は乗車中だけ、上下（視点の高さ（追加））だけずらす
  * ・視界は傾けない
  *
  * 1.7.10 の Forge にはカメラを直接動かす仕組みが無いので、画面を描いている間（RenderTick の START〜END）だけ
@@ -79,7 +80,17 @@ public class CameraFollowHandler {
             return zero;
         }
         int pose = ClientPoseCache.getPose(player.getEntityId());
-        if (!Poses.isSideWatch(pose) || MpmBridge.isAnimating(player)) {
+        if (MpmBridge.isAnimating(player)) {
+            return zero;
+        }
+        // 起立：乗車中だけ、側面監視と共通の「視点の上下」で上下にだけずらす
+        if (pose == Poses.STAND) {
+            if (player.ridingEntity == null || PoseConfig.cameraExtraHeight == 0F) {
+                return zero;
+            }
+            return new float[] {0F, PoseConfig.cameraExtraHeight / PoseMath.PIXEL_TO_BLOCK};
+        }
+        if (!Poses.isSideWatch(pose)) {
             return zero;
         }
         PoseDefinition def = PoseRegistry.get(pose);
