@@ -44,12 +44,17 @@ public final class PoseConfig {
     public static final float CAMERA_HEIGHT_MIN = -1.0F;
     public static final float CAMERA_HEIGHT_MAX = 1.0F;
 
-    /** 絵を反転するときの軸（持ち手）の位置。テクスチャの左端から何割の所か（0〜1）。 */
-    public static float itemFlipPivotU = 0.1875F;
-    /** 持ち手の位置。テクスチャの上端から何割の所か（0〜1）。 */
-    public static float itemPivotV = 0.8125F;
-    /** アイテムを持ち手を中心に外側へ倒す角度（度）。内側に倒れる場合はマイナスにする。 */
-    public static float itemTiltDeg = 40F;
+    /** アイテムの絵で手に持たせる点（根元）の位置。テクスチャの左端から何割の所か（0〜1）。自分の画面だけに効く */
+    public static float itemGripU = 0.1875F;
+    /** 根元の位置。テクスチャの上端から何割の所か（0〜1）。 */
+    public static float itemGripV = 0.8125F;
+    /** アイテムを手を中心に回す角度（度）。マイナスで外側（腕の向き）へ、プラスで内側へ。 */
+    public static float itemTiltDeg = -40F;
+    public static final float DEFAULT_ITEM_GRIP_U = 0.1875F;
+    public static final float DEFAULT_ITEM_GRIP_V = 0.8125F;
+    public static final float DEFAULT_ITEM_TILT = -40F;
+    public static final float ITEM_TILT_MIN = -180F;
+    public static final float ITEM_TILT_MAX = 180F;
 
     /** 手持ちアイテムを左右反転して描くポーズ（添字 = ポーズ番号）。 */
     private static final boolean[] MIRRORED_ITEM = new boolean[10];
@@ -105,6 +110,9 @@ public final class PoseConfig {
         config.get("adjust", "cameraFollowHead", true).set(cameraFollowHead);
         config.get("adjust", "cameraExtraSide", 0D).set(cameraExtraSide);
         config.get("adjust", "cameraExtraHeight", 0D).set(cameraExtraHeight);
+        config.get("general", "itemGripU", (double) DEFAULT_ITEM_GRIP_U).set(itemGripU);
+        config.get("general", "itemGripV", (double) DEFAULT_ITEM_GRIP_V).set(itemGripV);
+        config.get("general", "itemTiltDeg", (double) DEFAULT_ITEM_TILT).set(itemTiltDeg);
         config.save();
     }
 
@@ -128,12 +136,22 @@ public final class PoseConfig {
             versionProp.set(CONFIG_VERSION);
         }
         applyMirroredItemPoses(mirroredProp.getString());
-        itemFlipPivotU = Poses.clamp((float) config.get("general", "itemFlipPivotU", 0.1875D,
-                "アイテムの絵を反転するときの軸（持ち手）の位置。テクスチャの左端から何割の所か（0〜1）").getDouble(0.1875D), 0F, 1F);
-        itemPivotV = Poses.clamp((float) config.get("general", "itemPivotV", 0.8125D,
-                "持ち手の位置。テクスチャの上端から何割の所か（0〜1）。アイテムを倒すときの中心").getDouble(0.8125D), 0F, 1F);
-        itemTiltDeg = (float) config.get("general", "itemTiltDeg", 40D,
-                "手上げ・側面監視（手上げ）で、アイテムを持ち手を中心に外側へ倒す角度（度）。内側に倒れる場合はマイナスに").getDouble(40D);
+        // 0.9.2 までの持ち手の設定（回す中心と根元が同じ値だった）は使わなくなったので消す
+        net.minecraftforge.common.config.ConfigCategory general = config.getCategory("general");
+        general.remove("itemFlipPivotU");
+        general.remove("itemPivotV");
+        itemGripU = Poses.clamp((float) config.get("general", "itemGripU", (double) DEFAULT_ITEM_GRIP_U,
+                "手上げ・側面監視（手上げ）で手に持たせる点（旗なら棒の根元）の位置。テクスチャの左端から何割の所か（0〜1）。"
+                        + "調整画面でも変えられます（自分の画面だけに効く）").getDouble(DEFAULT_ITEM_GRIP_U), 0F, 1F);
+        itemGripV = Poses.clamp((float) config.get("general", "itemGripV", (double) DEFAULT_ITEM_GRIP_V,
+                "手に持たせる点の位置。テクスチャの上端から何割の所か（0〜1）").getDouble(DEFAULT_ITEM_GRIP_V), 0F, 1F);
+        net.minecraftforge.common.config.Property tiltProp = config.get("general", "itemTiltDeg", (double) DEFAULT_ITEM_TILT,
+                "アイテムを手を中心に回す角度（度）。マイナスで外側（腕の向き）へ、プラスで内側へ");
+        tiltProp.comment = "アイテムを手を中心に回す角度（度）。マイナスで外側（腕の向き）へ、プラスで内側へ";
+        if (tiltProp.getDouble(DEFAULT_ITEM_TILT) == 40D) {
+            tiltProp.set((double) DEFAULT_ITEM_TILT); // 0.9.2 までの初期値（内側へ40°）を新しい初期値に置き換え
+        }
+        itemTiltDeg = Poses.clamp((float) tiltProp.getDouble(DEFAULT_ITEM_TILT), ITEM_TILT_MIN, ITEM_TILT_MAX);
 
         config.addCustomCategoryComment("adjust",
                 "調整画面（選択画面の「調整」ボタン）で変える値。単位はスキンのピクセル（16 = 1ブロック）"

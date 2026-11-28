@@ -16,9 +16,11 @@ import org.lwjgl.opengl.GL11;
  * ポーズ中のプレイヤーのアイテムを描く一瞬だけ、RenderManager の itemRenderer をこれに差し替える。
  *
  * バニラはアイテムの絵を厚み付きの板として描き、裏面にも同じ絵を貼っている。
- * 板を「持ち手を通る縦の線」を軸に180°回して裏面を見せることで、
- * 持ち手は手の位置に残したまま、絵だけが左右反転して見える。
- * さらに、持ち手を中心に絵の面の中で回して、アイテムを外側へ倒す（PoseConfig.itemTiltDeg）。
+ * 次の順で板を動かす（すべて絵の面の中、手の位置 HAND を基準にする）。
+ *  1. 手を通る縦の線を軸に180°回して裏面を見せ、絵を左右反転する
+ *  2. 絵の「根元の位置」（PoseConfig.itemGripU / itemGripV）が手に来るように平行移動する
+ *  3. 手を中心に回す（PoseConfig.itemTiltDeg。マイナスで外側＝腕の向きへ、プラスで内側へ）
+ * 回す中心はいつも手なので、角度を変えても根元は手から離れない。
  *
  * 板の座標系（バニラの ItemRenderer.renderItem で renderItemIn2D を呼ぶ直前）では、
  * 絵は x:0〜1, y:0〜1 に描かれ、テクスチャの左端（u=0）が x=1 側、右端が x=0 側になる。
@@ -28,6 +30,10 @@ public class FlippedItemRenderer extends ItemRenderer {
 
     /** 板の厚み（renderItemIn2D の第8引数と同じ） */
     private static final float THICKNESS = 0.0625F;
+
+    /** バニラで手の位置に来る絵の点（テクスチャの左から/上から何割か）。回す中心 */
+    private static final float HAND_U = 0.1875F;
+    private static final float HAND_V = 0.8125F;
 
     /**
      * 今描いているアイテムを持つ手が右手なら +1、左手なら -1。
@@ -45,9 +51,12 @@ public class FlippedItemRenderer extends ItemRenderer {
             super.renderItem(entity, stack, pass);
             return;
         }
-        // 持ち手の位置（テクスチャの左から/上から何割か）。u → 板の x は 1-u、v → 板の y は 1-v
-        float pivotX = 1.0F - PoseConfig.itemFlipPivotU;
-        float pivotY = 1.0F - PoseConfig.itemPivotV;
+        // テクスチャ座標 (u, v) → 板の座標 (1-u, 1-v)
+        float handX = 1.0F - HAND_U;
+        float handY = 1.0F - HAND_V;
+        // 反転後の根元の位置は (2*handX - gripX, gripY)。それを手 (handX, handY) へ動かす量
+        float shiftX = (1.0F - PoseConfig.itemGripU) - handX;
+        float shiftY = handY - (1.0F - PoseConfig.itemGripV);
         float centerZ = -THICKNESS / 2.0F;
         float tilt = PoseConfig.itemTiltDeg * handSign;
 
@@ -58,16 +67,18 @@ public class FlippedItemRenderer extends ItemRenderer {
         GL11.glRotatef(50.0F, 0.0F, 1.0F, 0.0F);
         GL11.glRotatef(335.0F, 0.0F, 0.0F, 1.0F);
         GL11.glTranslatef(-0.9375F, -0.0625F, 0.0F);
-        // 持ち手を通る縦の線を軸に 180°
-        GL11.glTranslatef(pivotX, 0.0F, centerZ);
-        GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
-        GL11.glTranslatef(-pivotX, 0.0F, -centerZ);
-        // 持ち手を中心に、絵の面の中で回す（外側へ倒す）
+        // 3. 手を中心に、絵の面の中で回す
         if (tilt != 0.0F) {
-            GL11.glTranslatef(pivotX, pivotY, 0.0F);
+            GL11.glTranslatef(handX, handY, 0.0F);
             GL11.glRotatef(tilt, 0.0F, 0.0F, 1.0F);
-            GL11.glTranslatef(-pivotX, -pivotY, 0.0F);
+            GL11.glTranslatef(-handX, -handY, 0.0F);
         }
+        // 2. 根元を手へ
+        GL11.glTranslatef(shiftX, shiftY, 0.0F);
+        // 1. 手を通る縦の線を軸に 180°（左右反転）
+        GL11.glTranslatef(handX, 0.0F, centerZ);
+        GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
+        GL11.glTranslatef(-handX, 0.0F, -centerZ);
         // D の逆
         GL11.glTranslatef(0.9375F, 0.0625F, 0.0F);
         GL11.glRotatef(-335.0F, 0.0F, 0.0F, 1.0F);

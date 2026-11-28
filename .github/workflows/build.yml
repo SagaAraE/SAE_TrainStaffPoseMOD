@@ -40,7 +40,7 @@ jobs:
       - name: Package jar and README
         run: |
           JAR=$(ls build/libs/*.jar | grep -v -e '-dev' -e '-sources' | head -1)
-          VERSION=$(basename "$JAR" .jar | sed 's/^playerpose-//')
+          VERSION=$(basename "$JAR" .jar | sed 's/^SAE_TrainStaffPose-//')
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           mkdir -p dist
           cp "$JAR" dist/
@@ -64,6 +64,7 @@ jobs:
 
             ・前提mod：More Player Models 1.7.10b（別途入手してください。このファイルには含まれていません）
             ・サーバーと全クライアントの両方に jar を入れてください。
+            ・古いバージョンの jar（playerpose-〜.jar や SAE_TrainStaffPose-〜.jar）は必ず消してから入れてください。
             ・操作方法などは README.txt を参照してください。
 
             License: CC BY-NC 3.0 / Author: SagaAraE
